@@ -4,62 +4,90 @@ using ConsoleApp1;
 
 namespace ConsoleApp1
 {
-    class AccountBank
+    class Employee
     {
-        public  int number {get; set;}
-        public required string holder { get; set; }
-        public double balance { get; private set; }
+        public string Name { get; set; }
+        public int Hours { get; set; }
+        public double valuePerHour { get; private set; }
 
-        public virtual void withDraw(double amount)
+        public Employee()
         {
-            if (amount <= balance)
-            {
-                balance -= amount;
-            }
+
         }
 
-        public virtual void Deposit(double amount)
+        public Employee(string name, int hours, double valuePerHour)
         {
-            balance += amount;
+            this.Name = name;
+            this.Hours = hours;
+            this.valuePerHour = valuePerHour;
         }
+
+        public virtual double Payment()
+        {
+            return valuePerHour * Hours;
+        }
+
+
     }
-
-    class AccountBusiness : AccountBank
+    class OutsourcedEmployee : Employee
     {
-        public double loanLimit = 2;
+        public double additionalCharge {get; set;}
 
-        public void loan(double amount)
+        public OutsourcedEmployee()
         {
-            if (amount < loanLimit)
-            {
-                Deposit(amount);
-            }
+
         }
 
-        public override void withDraw(double amount)
+        public OutsourcedEmployee(string name, int hours, double valuePerHour, double additionalCharge) : base(name, hours, valuePerHour) // utiliza o construtor de cima, ira definir name, hours, valuePerHour sem que precise reescrever novamente
         {
-            base.withDraw(amount);
-            base.withDraw(2);
+            this.additionalCharge = additionalCharge;
+        } 
+
+        public override double Payment()
+        {
+            
+            double Porcent = base.Payment() / 100 ;
+            return base.Payment() + Porcent; 
         }
     }
     class Program
     {
         static void Main(string[] args)
         {
-            AccountBank account = new AccountBank { holder = "Henrique", number=200};
-            AccountBank s = new AccountBusiness { holder = "Henrique", number=400};
-            AccountBusiness account1 = (AccountBusiness) account;
-            account.Deposit(400);
-            account.withDraw(200);
-            s.Deposit(400);
-            s.withDraw(200);
-            Console.WriteLine(account.balance);
-            Console.WriteLine(s.balance);
-            if(s is AccountBank)
+            List<Employee> list = new List<Employee>();
+
+            Console.Write("Enter the number of employees: ");
+            int n = int.Parse(Console.ReadLine());
+
+            for (int i = 1; i <= n; i++)
             {
-                Console.WriteLine("s is account bank");
+                Console.WriteLine($"Employee #{i} data:");
+                Console.Write("Outsourced (y/n)? ");
+                char ch = char.Parse(Console.ReadLine());
+                Console.Write("Name: ");
+                String name = Console.ReadLine();
+                Console.Write("Hours: ");
+                int hours = int.Parse(Console.ReadLine());
+                Console.Write("Value per hour: ");
+                double valuePerHour = double.Parse(Console.ReadLine(), CultureInfo.InvariantCulture);
+                if (ch == 'y')
+                {
+                    Console.Write("Additional charge: ");
+                    double additionalCharge = double.Parse(Console.ReadLine(), CultureInfo.InvariantCulture);
+                    list.Add(new OutsourcedEmployee(name, hours, valuePerHour, additionalCharge));
+                }
+                else
+                {
+                    list.Add(new Employee(name, hours, valuePerHour));
+                }
             }
 
+            Console.WriteLine();
+            Console.WriteLine("PAYMENTS:");
+            foreach (Employee emp in list)
+            {
+                Console.WriteLine(emp.Name + " - $ " + emp.Payment().ToString("F2", CultureInfo.InvariantCulture));
+            }
         }
     }
 }
