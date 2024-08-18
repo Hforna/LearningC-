@@ -4,90 +4,97 @@ using ConsoleApp1;
 
 namespace ConsoleApp1
 {
-    class Employee
+    class Product
     {
-        public string Name { get; set; }
-        public int Hours { get; set; }
-        public double valuePerHour { get; private set; }
+        public string Name {get; set;}
+        public double Price {get; set;}
 
-        public Employee()
+        public Product(string Name, double Price)
         {
-
+            this.Name = Name;
+            this.Price = Price;
         }
-
-        public Employee(string name, int hours, double valuePerHour)
+        public virtual string priceTag()
         {
-            this.Name = name;
-            this.Hours = hours;
-            this.valuePerHour = valuePerHour;
-        }
-
-        public virtual double Payment()
-        {
-            return valuePerHour * Hours;
-        }
-
-
-    }
-    class OutsourcedEmployee : Employee
-    {
-        public double additionalCharge {get; set;}
-
-        public OutsourcedEmployee()
-        {
-
-        }
-
-        public OutsourcedEmployee(string name, int hours, double valuePerHour, double additionalCharge) : base(name, hours, valuePerHour) // utiliza o construtor de cima, ira definir name, hours, valuePerHour sem que precise reescrever novamente
-        {
-            this.additionalCharge = additionalCharge;
+            return $"{Name} ${Price}";
         } 
+    }
 
-        public override double Payment()
+    class ImportedProduct : Product
+    {
+        private double customsFee = 20;
+
+        public ImportedProduct(string name, double price, double customsFee) :base(name, price)
         {
-            
-            double Porcent = base.Payment() / 100 ;
-            return base.Payment() + Porcent; 
+            this.customsFee = customsFee;
+        }
+
+        private double totalPrice()
+        {
+            return Price + customsFee;
+        }
+        public override string priceTag()
+        {
+            return base.priceTag() + $" (Customs fee: $ {totalPrice()})";
+        }
+    }
+
+    class UsedProduct : Product
+    {
+        public DateTime manufactureDate;
+
+        public UsedProduct(string name, double price, DateTime manufactureDate) : base(name, price)
+        {
+            this.manufactureDate = manufactureDate;
+        }
+        public override string priceTag()
+        {
+            return base.priceTag() + $"Manufacture date: {manufactureDate}";
         }
     }
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
-            List<Employee> list = new List<Employee>();
+            Console.Write("Enter number of product: ");
+            List<Product> list = new List<Product>();
 
-            Console.Write("Enter the number of employees: ");
+            Console.Write("Enter the number of products: ");
             int n = int.Parse(Console.ReadLine());
 
             for (int i = 1; i <= n; i++)
             {
-                Console.WriteLine($"Employee #{i} data:");
-                Console.Write("Outsourced (y/n)? ");
-                char ch = char.Parse(Console.ReadLine());
+                Console.WriteLine("Product #" + i + " data:");
+                Console.Write("Common, used or imported (c/u/i)? ");
+                char type = char.Parse(Console.ReadLine());
                 Console.Write("Name: ");
                 String name = Console.ReadLine();
-                Console.Write("Hours: ");
-                int hours = int.Parse(Console.ReadLine());
-                Console.Write("Value per hour: ");
-                double valuePerHour = double.Parse(Console.ReadLine(), CultureInfo.InvariantCulture);
-                if (ch == 'y')
+                Console.Write("Price: ");
+                double price = double.Parse(Console.ReadLine(), CultureInfo.InvariantCulture);
+                if (type == 'c')
                 {
-                    Console.Write("Additional charge: ");
-                    double additionalCharge = double.Parse(Console.ReadLine(), CultureInfo.InvariantCulture);
-                    list.Add(new OutsourcedEmployee(name, hours, valuePerHour, additionalCharge));
+                    list.Add(new Product(name, price));
+                }
+                else if (type == 'u')
+                {
+                    Console.Write("Manufacture date (DD/MM/YYYY): ");
+                    DateTime date = DateTime.Parse(Console.ReadLine());
+                    list.Add(new UsedProduct(name, price, date));
                 }
                 else
                 {
-                    list.Add(new Employee(name, hours, valuePerHour));
+                    Console.Write("Customs fee: ");
+                    double customsFee = double.Parse(Console.ReadLine(), CultureInfo.InvariantCulture);
+                    list.Add(new ImportedProduct(name, price, customsFee));
                 }
             }
 
             Console.WriteLine();
-            Console.WriteLine("PAYMENTS:");
-            foreach (Employee emp in list)
+            Console.WriteLine("PRICE TAGS:");
+            foreach (Product prod in list)
             {
-                Console.WriteLine(emp.Name + " - $ " + emp.Payment().ToString("F2", CultureInfo.InvariantCulture));
+                Console.WriteLine(prod.priceTag());
+            }
             }
         }
     }
-}
