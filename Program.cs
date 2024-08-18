@@ -1,100 +1,73 @@
 ﻿using System;
 using System.Globalization;
+using System.Collections.Generic;
 using ConsoleApp1;
 
 namespace ConsoleApp1
 {
-    class Product
+    class BankException : ApplicationException
     {
-        public string Name {get; set;}
-        public double Price {get; set;}
+        public BankException(string message) : base(message)
+        {
 
-        public Product(string Name, double Price)
-        {
-            this.Name = Name;
-            this.Price = Price;
-        }
-        public virtual string priceTag()
-        {
-            return $"{Name} ${Price}";
-        } 
-    }
-
-    class ImportedProduct : Product
-    {
-        private double customsFee = 20;
-
-        public ImportedProduct(string name, double price, double customsFee) :base(name, price)
-        {
-            this.customsFee = customsFee;
-        }
-
-        private double totalPrice()
-        {
-            return Price + customsFee;
-        }
-        public override string priceTag()
-        {
-            return base.priceTag() + $" (Customs fee: $ {totalPrice()})";
         }
     }
 
-    class UsedProduct : Product
+    class Account
     {
-        public DateTime manufactureDate;
+        public int Number { get; set; }
+        public string Holder { get; set; }
+        public double Balance { get; set; }
+        public double withdrawLimit { get; set; }
 
-        public UsedProduct(string name, double price, DateTime manufactureDate) : base(name, price)
+        public Account()
         {
-            this.manufactureDate = manufactureDate;
+
         }
-        public override string priceTag()
+
+        public void Deposit(double amount)
         {
-            return base.priceTag() + $"Manufacture date: {manufactureDate}";
+            Balance += amount;
+        }
+
+        public void withdraw(double amount)
+        {
+            if(amount > Balance)
+            {
+                throw new BankException($"You just have ${Balance}, please digit a amount lower");
+            } else if(amount > withdrawLimit)
+            {
+                throw new BankException($"Your withdraw limit is {withdrawLimit}, please digit a amount lower than limit");
+            }
+
+            Balance -= amount;
         }
     }
+
     class Program
     {
-        static void Main()
+        static void Main(string[] args)
         {
-            Console.Write("Enter number of product: ");
-            List<Product> list = new List<Product>();
-
-            Console.Write("Enter the number of products: ");
-            int n = int.Parse(Console.ReadLine());
-
-            for (int i = 1; i <= n; i++)
+            Console.WriteLine("Enter account data");
+            Console.Write("Number: "); 
+            int number = int.Parse(Console.ReadLine());
+            Console.Write("Holder: ");
+            string holder = Console.ReadLine(); 
+            Console.Write("Initial balance: ");
+            double balance = double.Parse(Console.ReadLine());
+            Console.Write("Withdraw limit: ");
+            double withdrawLimit = double.Parse(Console.ReadLine());
+            Console.Write("Enter amount for withdraw: ");
+            double withdraw = double.Parse(Console.ReadLine()); 
+            Account newAccount = new Account() {Balance=balance, Holder=holder, Number=number, withdrawLimit=withdrawLimit};
+            try
             {
-                Console.WriteLine("Product #" + i + " data:");
-                Console.Write("Common, used or imported (c/u/i)? ");
-                char type = char.Parse(Console.ReadLine());
-                Console.Write("Name: ");
-                String name = Console.ReadLine();
-                Console.Write("Price: ");
-                double price = double.Parse(Console.ReadLine(), CultureInfo.InvariantCulture);
-                if (type == 'c')
-                {
-                    list.Add(new Product(name, price));
-                }
-                else if (type == 'u')
-                {
-                    Console.Write("Manufacture date (DD/MM/YYYY): ");
-                    DateTime date = DateTime.Parse(Console.ReadLine());
-                    list.Add(new UsedProduct(name, price, date));
-                }
-                else
-                {
-                    Console.Write("Customs fee: ");
-                    double customsFee = double.Parse(Console.ReadLine(), CultureInfo.InvariantCulture);
-                    list.Add(new ImportedProduct(name, price, customsFee));
-                }
-            }
-
-            Console.WriteLine();
-            Console.WriteLine("PRICE TAGS:");
-            foreach (Product prod in list)
+                newAccount.withdraw(withdraw);
+                Console.WriteLine($"New balance: {newAccount.Balance}");
+            } catch(BankException e)
             {
-                Console.WriteLine(prod.priceTag());
-            }
+                Console.WriteLine("Withdraw error" + e);
             }
         }
     }
+}
