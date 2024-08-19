@@ -1,40 +1,55 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
-public static class Solution {
-    
+
+class Tasks
+{
+    public string Name { get; set; }
+    public DateTime Date = DateTime.Now;
+    public string Description;
+    private bool Complete = false;
+
+    public Tasks(string Name, string Description)
+    {
+        this.Name = Name;
+        this.Description = Description;
+    }
+
+    public override string ToString()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.AppendLine(Name);
+        sb.AppendLine(Date.ToString());
+        sb.AppendLine(Description);
+        return sb.ToString();
+    }
+
+    public void CompleteTask()
+    {
+        Complete = true;
+    }
 }
-
 class Program
 {
     static void Main(string[] args)
     {
-    FileStream file = new FileStream("../pj.csv", FileMode.Open); // add a file here
-    List<string> listfile = new List<string>();
-    using(StreamReader filest = new StreamReader(file))
-    {
-        while(!filest.EndOfStream)
+        Tasks[] listTasks = new Tasks[6];
+        Directory.CreateDirectory("tasksdir");
+        for(int i = 1; i <= 6; i++)
         {
-            string fileline = filest.ReadLine();
-            listfile.Add(fileline);
+            listTasks[i] = new Tasks($"learn i in c#{i}", "Learn interfaces description in c#");     
         }
-    }
-    Directory.CreateDirectory("out");
-    List<string> fin = new List<string>();
-    foreach(string list in listfile)
-    {
-        var s = list.Split(", ");
-        double db = int.Parse(s[1].Trim()) * int.Parse(s[2].Trim());
-        fin.Add($"{s[0]}: {db}\n");
-    }
-    //Stream sss = File.Create("out/summary.csv");
-    using(StreamWriter write = File.AppendText("out/summary.csv"))
-    {
-        foreach(string line in fin)
+        FileStream fs = File.Create("tasksdir/taks.txt");
+        IEnumerable<Tasks> orderBy = listTasks.OrderBy(x => x.Date);
+        using(StreamWriter wr = new StreamWriter(fs))
         {
-            write.WriteLine(line);
+            foreach(Tasks task in listTasks)
+            {
+                wr.WriteLine(task);
+            }
         }
-    }
+
     }
 }
