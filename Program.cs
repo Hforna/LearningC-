@@ -1,131 +1,108 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
+using System.Collections.Generic;
 using System.Text;
+using System.Globalization;
 
 
-interface ITax
+
+interface ISystemPayment
 {
-    public double Tax(double amount);
-}
-class BrazilTaxService : ITax
-{
-
-    double ITax.Tax(double amount)
-    {
-        if(amount <= 100)
-        {
-            return amount * 0.2;
-        } else
-        {
-            return amount * 0.15;
-        }
-    }
-}
-class Vehicle
-{
-    public string Name { get; set; }
-
-    public Vehicle(string Nasme)
-    {
-        this.Name = Nasme;
-    }
+    double PaymentFee(double Porcent);
+    double Interest(double Porcent, double Month);
 }
 
-class RentalService
+class PayPal : ISystemPayment
 {
-    public double pricePerhour { get; set; }
-    public double pricePerDay { get; set; }
-    private ITax _itax;
-    public RentalService(double priceH, double priceD, ITax taxService)
+    private double FeePernetage = 0.02;
+    private double MonthlyInterest = 0.01;
+    public double Interest(double Amount, double Month)
     {
-        pricePerhour = priceH;
-        pricePerDay = priceD;
-        _itax = taxService;
+        return Amount * Month * MonthlyInterest;
     }
 
-    public void processInvoice(CarRental carRental)
+    public double PaymentFee(double Amount)
     {
-        TimeSpan duration = carRental.Finish.Subtract(carRental.Start);
-        double basicPayment;
-        if(duration.TotalHours <= 12)
-        {
-            basicPayment = pricePerhour * Math.Ceiling(duration.TotalHours);
-        } else {
-            basicPayment = pricePerDay * Math.Ceiling(duration.TotalDays);
-        }
+        return Amount * FeePernetage;
+    }
+}
+class Contract
+{
+    public int Number;
+    public DateTime Date;
+    public double ContractValue;
+    public int NumInstallment;
 
-        double tax = _itax.Tax(basicPayment);
-        carRental.invoice = new Invoice(basicPayment, tax);
+    public Contract(int number, DateTime date, double contractValue, int numInstall)
+    {
+        Number = number;
+        Date = date;
+        ContractValue = contractValue;
+        NumInstallment = numInstall;
     }
 }
 
-class CarRental
+class Installment
 {
-    public DateTime Start;
-    public DateTime Finish;
-    public Vehicle vehicle;
-    public Invoice? invoice;
+    public DateTime dueDate;
+    public double Amount;
 
-    public CarRental(DateTime Start, DateTime Finish, Vehicle vehicle)
+    public Installment(DateTime dueDate, double Amount)
     {
-        this.Start = Start;
-        this.Finish = Finish;
-        this.vehicle = vehicle;
-        this.invoice = null;
-    }
-}
-
-class Invoice
-{
-    public double basicPayment { private get; set; }
-    public double Tax { private get; set; }
-    
-    public Invoice(double basicPayment, double Tax)
-    {
-        this.basicPayment = basicPayment;
-        this.Tax = Tax;
-    }
-
-    public double TotalPayment
-    {
-        get { return basicPayment + Tax; }
+        this.dueDate = dueDate;
+        this.Amount = Amount;
     }
 
     public override string ToString()
     {
-        StringBuilder sb = new StringBuilder();
-        sb.AppendLine("Basic payment: " + basicPayment);
-        sb.AppendLine("Tax: " + Tax.ToString("F2", CultureInfo.InvariantCulture));
-        sb.AppendLine("Total payment: " + TotalPayment.ToString("F2", CultureInfo.InvariantCulture));
-        return sb.ToString();
+        return $"{dueDate} - {Amount}";
     }
 }
 
+class PaymentService
+{
+    public List<Installment> installments = new List<Installment>();
+    public Contract contract;
+    public ISystemPayment systemPayment;
+
+    public PaymentService(Contract contract, ISystemPayment systemPayment)
+    {
+        this.contract = contract;
+        this.systemPayment = systemPayment;
+    }
+
+    public void Calculations()
+    {
+        double contractQuota = contract.ContractValue / contract.NumInstallment;
+        for(int i = 1; i <= contract.NumInstallment; i++)
+        {
+            double InterestPayment = contractQuota + systemPayment.Interest(contractQuota, i);
+            double FeePayment = InterestPayment + systemPayment.PaymentFee(InterestPayment);
+            installments.Add(new Installment(contract.Date.AddMonths(i), FeePayment));
+        }
+    }
+}
 
 class Program
 {
     static void Main()
     {
-        Console.WriteLine("Enter car name: ");
-        string carName = Console.ReadLine();
-        Vehicle car = new Vehicle(carName);
-        Console.WriteLine("Pickup: (dd/mm/yyyy hh:mm): ");
-        DateTime startDate = DateTime.ParseExact(Console.ReadLine(), "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
-        Console.WriteLine("Return: (dd/mm/yyyy) hh:mm");
-        DateTime finishDate = DateTime.ParseExact(Console.ReadLine(), "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
-        Console.WriteLine("Enter price per hour");
-        double priceHour = double.Parse(Console.ReadLine(), CultureInfo.InvariantCulture);
-        Console.WriteLine("Enter pricer per day");
-        double priceDay = double.Parse(Console.ReadLine(), CultureInfo.InvariantCulture);
-        CarRental carental = new CarRental(startDate, finishDate, car);
-        RentalService rentaservice = new RentalService(priceHour, priceDay, new BrazilTaxService());
-        rentaservice.processInvoice(carental);
-        Console.WriteLine("INVOICE");
-        Console.WriteLine(carental.invoice);
-
-
-
+        Console.WriteLine("Enter contract data");
+        Console.Write("Number: ");
+        int NumContract = int.Parse(Console.ReadLine());
+        Console.Write("Date (dd/MM/yyyy): ");
+        DateTime dateStart = DateTime.ParseExact(Console.ReadLine(), "dd/MM/yyyy", CultureInfo.InvariantCulture);
+        Console.Write("Contract value: ");
+        double ContractValue = double.Parse(Console.ReadLine(), CultureInfo.InvariantCulture);
+        Console.Write("Enter number of installments: ");
+        int NumInstallments = int.Parse(Console.ReadLine());
+        Contract contract = new Contract(NumContract, dateStart, ContractValue, NumInstallments);
+        PaymentService paymentService = new PaymentService(contract, new PayPal());
+        paymentService.Calculations();
+        Console.WriteLine("Installments:");
+        foreach(Installment ins in paymentService.installments)
+        {
+            Console.WriteLine(ins);
+        }
     }
 }
