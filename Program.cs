@@ -1,108 +1,88 @@
 ﻿using System;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
-using System.Globalization;
 
-
-
-interface ISystemPayment
+interface IVehilce
 {
-    double PaymentFee(double Porcent);
-    double Interest(double Porcent, double Month);
+    public string Start();
+    public string Stop();
 }
 
-class PayPal : ISystemPayment
+class Bike : IVehilce
 {
-    private double FeePernetage = 0.02;
-    private double MonthlyInterest = 0.01;
-    public double Interest(double Amount, double Month)
+    public string Start()
     {
-        return Amount * Month * MonthlyInterest;
+        return "Pedal";
     }
 
-    public double PaymentFee(double Amount)
+    public string Stop()
     {
-        return Amount * FeePernetage;
-    }
-}
-class Contract
-{
-    public int Number;
-    public DateTime Date;
-    public double ContractValue;
-    public int NumInstallment;
-
-    public Contract(int number, DateTime date, double contractValue, int numInstall)
-    {
-        Number = number;
-        Date = date;
-        ContractValue = contractValue;
-        NumInstallment = numInstall;
+        return "stop pedal";
     }
 }
 
-class Installment
+class Car : IVehilce
 {
-    public DateTime dueDate;
-    public double Amount;
-
-    public Installment(DateTime dueDate, double Amount)
+    public string Start()
     {
-        this.dueDate = dueDate;
-        this.Amount = Amount;
+        return "turn key";
     }
 
-    public override string ToString()
+    public string Stop()
     {
-        return $"{dueDate} - {Amount}";
+        return "take off feet of car";
     }
 }
 
-class PaymentService
+class ListAll<T>
 {
-    public List<Installment> installments = new List<Installment>();
-    public Contract contract;
-    public ISystemPayment systemPayment;
+    public List<T> Values = new List<T>();
 
-    public PaymentService(Contract contract, ISystemPayment systemPayment)
+    public void AddValue(T vl)
     {
-        this.contract = contract;
-        this.systemPayment = systemPayment;
+        Values.Add(vl);
     }
 
-    public void Calculations()
+    public void RemoveValue(T v1)
     {
-        double contractQuota = contract.ContractValue / contract.NumInstallment;
-        for(int i = 1; i <= contract.NumInstallment; i++)
-        {
-            double InterestPayment = contractQuota + systemPayment.Interest(contractQuota, i);
-            double FeePayment = InterestPayment + systemPayment.PaymentFee(InterestPayment);
-            installments.Add(new Installment(contract.Date.AddMonths(i), FeePayment));
-        }
+        Values.Remove(v1);
+    }
+}
+
+static class ListAlls
+{
+    public static double plus(this int s, double f)
+    {
+        return s * f;
     }
 }
 
 class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
-        Console.WriteLine("Enter contract data");
-        Console.Write("Number: ");
-        int NumContract = int.Parse(Console.ReadLine());
-        Console.Write("Date (dd/MM/yyyy): ");
-        DateTime dateStart = DateTime.ParseExact(Console.ReadLine(), "dd/MM/yyyy", CultureInfo.InvariantCulture);
-        Console.Write("Contract value: ");
-        double ContractValue = double.Parse(Console.ReadLine(), CultureInfo.InvariantCulture);
-        Console.Write("Enter number of installments: ");
-        int NumInstallments = int.Parse(Console.ReadLine());
-        Contract contract = new Contract(NumContract, dateStart, ContractValue, NumInstallments);
-        PaymentService paymentService = new PaymentService(contract, new PayPal());
-        paymentService.Calculations();
-        Console.WriteLine("Installments:");
-        foreach(Installment ins in paymentService.installments)
+        ListAll<int> obj = new ListAll<int>();
+        ListAll<string> objs = new ListAll<string>();
+        int d = 2;
+        d.plus(2);
+        Console.WriteLine(d.plus(4));
+        
+        for(int i = 0; i <= 10; i++)
         {
-            Console.WriteLine(ins);
+            obj.AddValue(i);
+        }
+        for(int i = 0; i < obj.Values.Count; i++)
+        {
+            Console.WriteLine(obj.Values[i]);
+        }
+        for(int s = 0; s <= 10; s++)
+        {
+            objs.AddValue($"string number {s}");
+        }
+        for(int s = 0; s <= 10; s++)
+        {
+            Console.WriteLine(objs.Values[s]);
         }
     }
 }
