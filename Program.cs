@@ -5,9 +5,23 @@ using System.IO;
 using System.Text;
 
 
-class BrazilTaxService
+interface ITax
 {
-    public double Tax { get; set; }
+    public double Tax(double amount);
+}
+class BrazilTaxService : ITax
+{
+
+    double ITax.Tax(double amount)
+    {
+        if(amount <= 100)
+        {
+            return amount * 0.2;
+        } else
+        {
+            return amount * 0.15;
+        }
+    }
 }
 class Vehicle
 {
@@ -23,12 +37,12 @@ class RentalService
 {
     public double pricePerhour { get; set; }
     public double pricePerDay { get; set; }
-    private BrazilTaxService _brazilTaxService = new BrazilTaxService();
-
-    public RentalService(double priceH, double priceD)
+    private ITax _itax;
+    public RentalService(double priceH, double priceD, ITax taxService)
     {
         pricePerhour = priceH;
         pricePerDay = priceD;
+        _itax = taxService;
     }
 
     public void processInvoice(CarRental carRental)
@@ -42,8 +56,8 @@ class RentalService
             basicPayment = pricePerDay * Math.Ceiling(duration.TotalDays);
         }
 
-        _brazilTaxService.Tax = basicPayment;
-        carRental.invoice = new Invoice(basicPayment, _brazilTaxService.Tax);
+        double tax = _itax.Tax(basicPayment);
+        carRental.invoice = new Invoice(basicPayment, tax);
     }
 }
 
@@ -106,7 +120,7 @@ class Program
         Console.WriteLine("Enter pricer per day");
         double priceDay = double.Parse(Console.ReadLine(), CultureInfo.InvariantCulture);
         CarRental carental = new CarRental(startDate, finishDate, car);
-        RentalService rentaservice = new RentalService(priceHour, priceDay);
+        RentalService rentaservice = new RentalService(priceHour, priceDay, new BrazilTaxService());
         rentaservice.processInvoice(carental);
         Console.WriteLine("INVOICE");
         Console.WriteLine(carental.invoice);
