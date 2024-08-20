@@ -1,88 +1,66 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
+using System.Collections.Generic;
 using System.Text;
 
-interface IVehilce
+
+class Product : IComparable
 {
-    public string Start();
-    public string Stop();
+    public string Name { get; set; }
+    public double Price { get; set; }
+
+    public Product(string name, double price)
+    {
+        Name = name;
+        Price = price;
+    }
+
+    public override string ToString()
+    {
+        return $"Name: {Name}, Price: {Price}";
+    }
+
+    public int CompareTo(object obj)
+    {
+        if (!(obj is Product))
+        {
+            throw new AggregateException("The object is not product");
+        }
+
+        Product otobject = obj as Product;
+        return Price.CompareTo(otobject.Price);
+    }
+
 }
 
-class Bike : IVehilce
+class CalcService
 {
-    public string Start()
+    public T Max<T>(List<T> list) where T : IComparable
     {
-        return "Pedal";
-    }
-
-    public string Stop()
-    {
-        return "stop pedal";
+        T highest = list[0];
+        for (int i = 1; i < list.Count; i++)
+        {
+            if (list[i].CompareTo(highest) > 0)
+            {
+                highest = list[i];
+            }
+        }
+        return highest;
     }
 }
 
-class Car : IVehilce
-{
-    public string Start()
-    {
-        return "turn key";
-    }
 
-    public string Stop()
-    {
-        return "take off feet of car";
-    }
-}
-
-class ListAll<T>
-{
-    public List<T> Values = new List<T>();
-
-    public void AddValue(T vl)
-    {
-        Values.Add(vl);
-    }
-
-    public void RemoveValue(T v1)
-    {
-        Values.Remove(v1);
-    }
-}
-
-static class ListAlls
-{
-    public static double plus(this int s, double f)
-    {
-        return s * f;
-    }
-}
 
 class Program
 {
     static void Main(string[] args)
     {
-        ListAll<int> obj = new ListAll<int>();
-        ListAll<string> objs = new ListAll<string>();
-        int d = 2;
-        d.plus(2);
-        Console.WriteLine(d.plus(4));
-        
-        for(int i = 0; i <= 10; i++)
+        List<Product> list = new List<Product>();
+        for (int i = 0; i <= 10; i++)
         {
-            obj.AddValue(i);
+            list.Add(new Product($"Iphone {i}", 200 * i));
         }
-        for(int i = 0; i < obj.Values.Count; i++)
-        {
-            Console.WriteLine(obj.Values[i]);
-        }
-        for(int s = 0; s <= 10; s++)
-        {
-            objs.AddValue($"string number {s}");
-        }
-        for(int s = 0; s <= 10; s++)
-        {
-            Console.WriteLine(objs.Values[s]);
-        }
+        CalcService cl = new CalcService();
+        Console.WriteLine(cl.Max<Product>(list));
     }
 }
