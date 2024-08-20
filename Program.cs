@@ -11,19 +11,25 @@ class BrazilTaxService
 }
 class Vehicle
 {
-    public required string Name { get; set; }
+    public string Name { get; set; }
 
-    public Vehicle(string Name)
+    public Vehicle(string Nasme)
     {
-        this.Name = Name;
+        this.Name = Nasme;
     }
 }
 
-class RentaService
+class RentalService
 {
     public double pricePerhour { get; set; }
     public double pricePerDay { get; set; }
     private BrazilTaxService _brazilTaxService = new BrazilTaxService();
+
+    public RentalService(double priceH, double priceD)
+    {
+        pricePerhour = priceH;
+        pricePerDay = priceD;
+    }
 
     public void processInvoice(CarRental carRental)
     {
@@ -88,6 +94,24 @@ class Program
 {
     static void Main()
     {
+        Console.WriteLine("Enter car name: ");
+        string carName = Console.ReadLine();
+        Vehicle car = new Vehicle(carName);
+        Console.WriteLine("Pickup: (dd/mm/yyyy hh:mm): ");
+        DateTime startDate = DateTime.ParseExact(Console.ReadLine(), "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
+        Console.WriteLine("Return: (dd/mm/yyyy) hh:mm");
+        DateTime finishDate = DateTime.ParseExact(Console.ReadLine(), "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
+        Console.WriteLine("Enter price per hour");
+        double priceHour = double.Parse(Console.ReadLine(), CultureInfo.InvariantCulture);
+        Console.WriteLine("Enter pricer per day");
+        double priceDay = double.Parse(Console.ReadLine(), CultureInfo.InvariantCulture);
+        CarRental carental = new CarRental(startDate, finishDate, car);
+        RentalService rentaservice = new RentalService(priceHour, priceDay);
+        rentaservice.processInvoice(carental);
+        Console.WriteLine("INVOICE");
+        Console.WriteLine(carental.invoice);
+
+
 
     }
 }
