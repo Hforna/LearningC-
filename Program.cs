@@ -1,65 +1,78 @@
 ﻿using System;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
+using System.Globalization;
 
-
-class Product
+class Logs : IComparable
 {
-    public string Name { get; set; }
-    public int Price { get; set; }
+    public string Name;
+    public DateTime Date;
 
-    public Product(string name, int price)
+    public Logs(string name, DateTime date)
     {
         Name = name;
-        Price = price;
+        Date = date;
+    }
+
+    public override string ToString()
+    {
+        return $"Name: {Name} Date: {Date}";
+    }
+
+    public int CompareTo(object obj)
+    {
+        if(!(obj is Logs))
+        {
+            return 0;
+        }
+
+        Logs other = obj as Logs;
+        return Date.CompareTo(other.Date);
     }
 
     public override int GetHashCode()
     {
-        return Name.GetHashCode() + Price.GetHashCode();
+        return Name.GetHashCode();
     }
 
     public override bool Equals(object obj)
     {
-        if (!(obj is Product))
+        if(!(obj is Logs))
         {
             return false;
         }
-        Product other = obj as Product;
-        return Name.Equals(other.Name) && Price.Equals(other.Price);
+        Logs other = obj as Logs;
+        return Name.Equals(other.Name);
     }
 }
 
 class Program
 {
-    static void Main(string[] args)
+    static void Main()
     {
-        HashSet<string> set = new HashSet<string>();
+        string path = "logs.txt";
 
-        for (int i = 1; i <= 10; i++)
+        HashSet<Logs> hashLogs = new HashSet<Logs>();
+
+        try
         {
-            set.Add($"Henrique{i}");
+            using (StreamReader sr = File.OpenText(path))
+            {
+                while(!sr.EndOfStream)
+                {
+                    string[] line = sr.ReadLine().Split(" ");
+                    hashLogs.Add(new Logs(line[0], DateTime.ParseExact(line[1], "yyyy-MM-ddTHH:mm:ss.FFFFFFFK", CultureInfo.InvariantCulture)));
+                }
+            }
         }
-        foreach (string name in set)
+        catch (IOException e)
         {
-            Console.WriteLine(name);
+            Console.WriteLine(e.Message);
         }
-
-        SortedSet<int> sortset = new SortedSet<int>() { 1, 2, 20, 6, 8, 10 };
-        SortedSet<int> sortsetd = new SortedSet<int>() { 1, 2, 212, 3, 558, 10 };
-        SortedSet<int> ssd = new SortedSet<int>(sortset);
-        ssd.IntersectWith(sortsetd);
-        foreach (int ss in ssd)
+        foreach(Logs i in hashLogs)
         {
-            Console.WriteLine(ss);
+            Console.WriteLine(i);
         }
-        Console.WriteLine(set.Contains("Henrique2"));
-
-        HashSet<Product> productH = new HashSet<Product>();
-        productH.Add(new Product("iPhone 16", 8000));
-        Product wnew = new Product("iPhone 16", 8000);
-        Console.Write(productH.Contains(wnew));
-
     }
 }
