@@ -1,78 +1,93 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
 using System.Globalization;
+using System.Collections.Generic;
+using System.Text;
+using System.IO;
 
-class Logs : IComparable
+class Student
 {
-    public string Name;
-    public DateTime Date;
+    public double Code;
 
-    public Logs(string name, DateTime date)
+    public Student(double code)
     {
-        Name = name;
-        Date = date;
+        Code = code;
     }
 
-    public override string ToString()
-    {
-        return $"Name: {Name} Date: {Date}";
-    }
-
-    public int CompareTo(object obj)
-    {
-        if(!(obj is Logs))
-        {
-            return 0;
-        }
-
-        Logs other = obj as Logs;
-        return Date.CompareTo(other.Date);
-    }
 
     public override int GetHashCode()
     {
-        return Name.GetHashCode();
+        return Code.GetHashCode();
     }
 
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
-        if(!(obj is Logs))
+        if (!(obj is Student))
         {
             return false;
         }
-        Logs other = obj as Logs;
-        return Name.Equals(other.Name);
+
+        Student other = obj as Student;
+        return Code.Equals(other.Code);
     }
+
 }
 
 class Program
 {
     static void Main()
     {
-        string path = "logs.txt";
-
-        HashSet<Logs> hashLogs = new HashSet<Logs>();
-
-        try
+        Console.Write("How many students for course A: ");
+        int numS = int.Parse(Console.ReadLine());
+        List<Student> courseA = new List<Student>();
+        for (int i = 0; i < numS; i++)
         {
-            using (StreamReader sr = File.OpenText(path))
+            courseA.Add(new Student(double.Parse(Console.ReadLine())));
+        }
+
+        Console.Write("How many students for course B: ");
+        int numB = int.Parse(Console.ReadLine());
+        List<Student> courseB = new List<Student>();
+        for (int i = 0; i < numB; i++)
+        {
+            courseB.Add(new Student(double.Parse(Console.ReadLine())));
+        }
+
+        Console.Write("How many students for course C: ");
+        int numC = int.Parse(Console.ReadLine());
+        List<Student> courseC = new List<Student>();
+        for (int i = 0; i < numC; i++)
+        {
+            courseC.Add(new Student(double.Parse(Console.ReadLine())));
+        }
+
+        int sumStudents = courseA.Count() + courseB.Count() + courseC.Count();
+        HashSet<Student> hashStudent = new HashSet<Student>();
+        for (int i = 1; i <= 3; i++)
+        {
+            var listCourses = courseA;
+            switch (i)
             {
-                while(!sr.EndOfStream)
-                {
-                    string[] line = sr.ReadLine().Split(" ");
-                    hashLogs.Add(new Logs(line[0], DateTime.ParseExact(line[1], "yyyy-MM-ddTHH:mm:ss.FFFFFFFK", CultureInfo.InvariantCulture)));
-                }
+                case 1:
+                    listCourses = courseA;
+                    break;
+                case 2:
+                    listCourses = courseB;
+                    break;
+                case 3:
+                    listCourses = courseC;
+                    break;
+
+            }
+            for (int c = 0; c < listCourses.Count(); c++)
+            {
+                hashStudent.Add(listCourses[c]);
             }
         }
-        catch (IOException e)
+        int ddd = 0;
+        foreach(Student pr in hashStudent)
         {
-            Console.WriteLine(e.Message);
+            ddd += 1;
         }
-        foreach(Logs i in hashLogs)
-        {
-            Console.WriteLine(i);
-        }
+        Console.WriteLine(ddd);
     }
 }
