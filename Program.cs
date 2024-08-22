@@ -1,32 +1,26 @@
 ﻿using System;
-using System.Globalization;
 using System.Collections.Generic;
-using System.Text;
-using System.IO;
 using System.Linq;
+using System.IO;
+using System.Globalization;
+using System.Text;
 
-delegate void IntNumberOperator(double first, double second);
-
-class Product : IComparable
+class Employee
 {
-    public double Price { get; set; }
     public string Name { get; set; }
+    public string Email { get; set; }
+    public double Salary { get; set; }
 
-    public Product(double Price, string name)
+    public Employee(string name, string email, double salary)
     {
         Name = name;
-        this.Price = Price;
+        Email = email;
+        Salary = salary;
     }
 
     public override string ToString()
     {
-        return $"{Name}, {Price}";
-    }
-
-    public int CompareTo(object obj)
-    {
-        Product other = obj as Product;
-        return Price.CompareTo(other.Price);
+        return $"Name: {Name}, Email: {Email}, Salary: {Salary}";
     }
 }
 
@@ -34,30 +28,26 @@ class Program
 {
     static void Main()
     {
+        List<Employee> listEmployee = new List<Employee>();
         string path = "logs.txt";
-        List<Product> listP = new List<Product>();
-        Dictionary<double, string> listFile = new Dictionary<double, string>();
-
         using (StreamReader sr = File.OpenText(path))
         {
             while (!sr.EndOfStream)
             {
-                string[] ss = sr.ReadLine().Split(", ");
-                listFile[double.Parse(ss[0])] = ss[1];
+                string[] infos = sr.ReadLine().Split(", ");
+                listEmployee.Add(new Employee(infos[0], infos[1], double.Parse(infos[2])));
             }
         }
-        foreach (var item in listFile)
+        Console.Write("Enter salary: ");
+        double salaryAmount = double.Parse(Console.ReadLine());
+        Console.WriteLine($"Email of people whose salary is than {salaryAmount}");
+        var newList = listEmployee.Where(x => x.Salary > salaryAmount).OrderBy(x => x.Salary).Select(x => new { x.Email, x.Salary, x.Name }).Distinct();
+        foreach (var item in newList)
         {
-            listP.Add(new Product(item.Key, item.Value));
+            Console.WriteLine(item.Email);
         }
-        double average = listP.Average(x => x.Price);
-        var listLess = listP.Where(x => x.Price < average).OrderByDescending(x => x.Price).ThenBy(x => x.Name);
-        foreach (Product p in listLess)
-        {
-            Console.WriteLine(p);
-        }
-        Console.WriteLine(average);
-
+        double sumFirstPeople = listEmployee.Where(x => x.Email == newList.First().Email).Sum(x => x.Salary);
+        Console.WriteLine($"Sum of salary of people whose name starts with {newList.First().Name[0]} is: {sumFirstPeople}");
 
     }
 }
