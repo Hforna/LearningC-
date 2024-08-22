@@ -9,10 +9,10 @@ delegate void IntNumberOperator(double first, double second);
 
 class Product : IComparable
 {
-    public int Price { get; set; }
+    public double Price { get; set; }
     public string Name { get; set; }
 
-    public Product(int Price, string name)
+    public Product(double Price, string name)
     {
         Name = name;
         this.Price = Price;
@@ -34,50 +34,30 @@ class Program
 {
     static void Main()
     {
+        string path = "logs.txt";
+        List<Product> listP = new List<Product>();
+        Dictionary<double, string> listFile = new Dictionary<double, string>();
 
-        List<Product> listP = new List<Product>
+        using (StreamReader sr = File.OpenText(path))
         {
-            new Product(250, "Product A"),
-            new Product(120, "Product B"),
-            new Product(350, "Product C"),
-            new Product(90, "Product D"),
-            new Product(200, "Product E"),
-            new Product(150, "Product F"),
-            new Product(400, "Product G"),
-            new Product(220, "Product H"),
-            new Product(310, "Product I"),
-            new Product(180, "Product J"),
-            new Product(300, "Product K"),
-            new Product(275, "Product L"),
-            new Product(50, "Product M"),
-            new Product(125, "Product N"),
-            new Product(90, "Product A"),
-            new Product(500, "Product O"),
-            new Product(300, "Product P"),
-            new Product(240, "Product Q"),
-            new Product(350, "Product R"),
-            new Product(150, "Product S"),
-        };
-
-
-        var slistP = listP.Where(x => x.Price >= 100).Select(x => x.Name.ToUpper());
-        foreach (string pr in slistP)
-        {
-            Console.WriteLine(pr);
+            while (!sr.EndOfStream)
+            {
+                string[] ss = sr.ReadLine().Split(", ");
+                listFile[double.Parse(ss[0])] = ss[1];
+            }
         }
-        var slistPO = listP.OrderBy(x => x.Price).ThenBy(x => x.Name).Select(x => $"{x.Name} Price is: {x.Price}").Skip(2).Take(8).Max();
-        Console.WriteLine(listP.Skip(5).Sum(x => x.Price));
-        //foreach (var pr in slistPO)
-        //{
-        //    Console.WriteLine(pr);
-        //}
-        var listGby = listP.Where(x => x.Price != 0).Select(x => (double)x.Price).Aggregate((x, y) => x * y);
-        Console.WriteLine(listGby);
-
-        static string ToUpp(Product name)
+        foreach (var item in listFile)
         {
-            return name.Name.ToUpper();
+            listP.Add(new Product(item.Key, item.Value));
         }
+        double average = listP.Average(x => x.Price);
+        var listLess = listP.Where(x => x.Price < average).OrderByDescending(x => x.Price).ThenBy(x => x.Name);
+        foreach (Product p in listLess)
+        {
+            Console.WriteLine(p);
+        }
+        Console.WriteLine(average);
+
 
     }
 }
