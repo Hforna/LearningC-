@@ -32,11 +32,23 @@ class Program
         List<Product> listP = new List<Product>();
         for(int i = 0; i <= 10; i++)
         {
-            listP.Add(new Product(20 * i, $"Product {i}"));
+            if(i > 5 && i < 8)
+            {
+                listP.Add(new Product(40 * i, $"Product {i}"));
+            }else
+            {
+                listP.Add(new Product(20 * i, $"Product {i}"));
+            }
+            
         }
 
-        List<string> slistP = listP.Select(x => x.Name.ToUpper()).ToList();
+        var slistP = listP.Where(x => x.Price >= 100 ).Select(x => x.Name.ToUpper());
         foreach(string pr in slistP)
+        {
+            Console.WriteLine(pr);
+        }
+        var slistPO = listP.OrderBy(x => x.Price).ThenBy(x => x.Name);
+        foreach (Product pr in slistPO)
         {
             Console.WriteLine(pr);
         }
