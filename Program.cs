@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO;
 
+delegate void IntNumberOperator(double first, double second);
+
 class Student
 {
     public double Code;
@@ -36,58 +38,21 @@ class Program
 {
     static void Main()
     {
-        Console.Write("How many students for course A: ");
-        int numS = int.Parse(Console.ReadLine());
-        List<Student> courseA = new List<Student>();
-        for (int i = 0; i < numS; i++)
+        Dictionary<int, string> dict = new Dictionary<int, string>();
+        dict.Add(2, "henrique");
+        Console.WriteLine(dict[2]);
+        static void Sum(double num1, double num2)
         {
-            courseA.Add(new Student(double.Parse(Console.ReadLine())));
+            Console.WriteLine(num1 + num2);
         }
-
-        Console.Write("How many students for course B: ");
-        int numB = int.Parse(Console.ReadLine());
-        List<Student> courseB = new List<Student>();
-        for (int i = 0; i < numB; i++)
+        static void Plus(double num1, double num2)
         {
-            courseB.Add(new Student(double.Parse(Console.ReadLine())));
+            Console.WriteLine(num1 * num2);
         }
-
-        Console.Write("How many students for course C: ");
-        int numC = int.Parse(Console.ReadLine());
-        List<Student> courseC = new List<Student>();
-        for (int i = 0; i < numC; i++)
-        {
-            courseC.Add(new Student(double.Parse(Console.ReadLine())));
-        }
-
-        int sumStudents = courseA.Count() + courseB.Count() + courseC.Count();
-        HashSet<Student> hashStudent = new HashSet<Student>();
-        for (int i = 1; i <= 3; i++)
-        {
-            var listCourses = courseA;
-            switch (i)
-            {
-                case 1:
-                    listCourses = courseA;
-                    break;
-                case 2:
-                    listCourses = courseB;
-                    break;
-                case 3:
-                    listCourses = courseC;
-                    break;
-
-            }
-            for (int c = 0; c < listCourses.Count(); c++)
-            {
-                hashStudent.Add(listCourses[c]);
-            }
-        }
-        int ddd = 0;
-        foreach(Student pr in hashStudent)
-        {
-            ddd += 1;
-        }
-        Console.WriteLine(ddd);
+        IntNumberOperator ss = Sum;
+        ss += Plus;
+        double[] listD = new double[4];
+        ss(2, 4);
+        
     }
 }
