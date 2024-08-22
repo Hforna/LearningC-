@@ -3,56 +3,48 @@ using System.Globalization;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
+using System.Linq;
 
 delegate void IntNumberOperator(double first, double second);
 
-class Student
+class Product
 {
-    public double Code;
+    public int Price { get; set; }
+    public string Name { get; set; }
 
-    public Student(double code)
+    public Product(int Price, string name)
     {
-        Code = code;
+        Name = name;
+        this.Price = Price;
     }
 
-
-    public override int GetHashCode()
+    public override string ToString()
     {
-        return Code.GetHashCode();
+        return $"{Name}, {Price}";
     }
-
-    public override bool Equals(object? obj)
-    {
-        if (!(obj is Student))
-        {
-            return false;
-        }
-
-        Student other = obj as Student;
-        return Code.Equals(other.Code);
-    }
-
 }
 
 class Program
 {
     static void Main()
     {
-        Dictionary<int, string> dict = new Dictionary<int, string>();
-        dict.Add(2, "henrique");
-        Console.WriteLine(dict[2]);
-        static void Sum(double num1, double num2)
+
+        List<Product> listP = new List<Product>();
+        for(int i = 0; i <= 10; i++)
         {
-            Console.WriteLine(num1 + num2);
+            listP.Add(new Product(20 * i, $"Product {i}"));
         }
-        static void Plus(double num1, double num2)
+
+        List<string> slistP = listP.Select(x => x.Name.ToUpper()).ToList();
+        foreach(string pr in slistP)
         {
-            Console.WriteLine(num1 * num2);
+            Console.WriteLine(pr);
         }
-        IntNumberOperator ss = Sum;
-        ss += Plus;
-        double[] listD = new double[4];
-        ss(2, 4);
+
+        static string ToUpp(Product name)
+        {
+            return name.Name.ToUpper();
+        }
         
     }
 }
